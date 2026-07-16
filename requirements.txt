@@ -1,3 +1,5 @@
 pdfplumber 
 PyMuPDF
 pandas
+python-dotenv
+pathlib
