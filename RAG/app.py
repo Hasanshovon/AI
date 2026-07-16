@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 import pdfplumber
 import fitz   
-import pymupdf
+import pymupdf as fitz
 from pathlib import Path
 
 
@@ -16,30 +16,24 @@ print(api_key)
 
 """
 
-#2. Extract raw text from a PDF
-# extract file list from data folder 
-files = os.listdir("data/")
-"""
-for file in files:
-    if file.endswith(".pdf"):
-        pdf_path = os.path.join("data", file)
-        with fitz.open(pdf_path) as pdf:
-            text = ""
-            for page in pdf:
-                text += page.get_text()
-            print(f"Extracted text from {file}:")
-            print(text)
-"""
-# Initialize a dictionary to hold the text for each page 
-pdf_text = {} 
 
-pdf_folder = Path("data/")  # Path to the folder containing PDF files
-for pdf_file in pdf_folder.glob("*.pdf"):  # Iterate over all PDF files in the folder
-    full_text = ""
-    with fitz.open(pdf_file) as pdf:  # Open the PDF file 
-        for page in pdf:  # Iterate over each page in the PDF
-            full_text += page.get_text()  # Extract text from the page and append it to full_text
-    pdf_text[pdf_file.name] = full_text  # Store the extracted text in the
-with open("extracted_text.json", "w") as f:  # Open a JSON file to save the extracted text
-    import json
-    json.dump(pdf_text, f)  # Write the dictionary to the JSON file
+pdf_folder = Path("data")
+pdf_data = {}
+
+for pdf_file in pdf_folder.glob("*.pdf"):
+    with fitz.open(pdf_file) as pdf:
+        text = "".join(page.get_text() for page in pdf)
+
+    title = next(
+        (line.strip() for line in text.splitlines() if line.strip()),
+        pdf_file.stem
+    )
+
+    pdf_data[pdf_file.stem] = {
+        "id": pdf_file.stem,
+        "title": title,
+        "source": str(pdf_file),
+        "text": text,
+    }
+
+print(pdf_data)
